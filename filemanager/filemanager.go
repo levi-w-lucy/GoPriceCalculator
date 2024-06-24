@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 )
 
 type FileManager struct {
@@ -36,10 +37,13 @@ func (fm FileManager) ReadLines() ([]string, error) {
 }
 
 func (fm FileManager) WriteResult(data any) error {
+
 	var newFile, err = os.Create(fm.OutputFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file %s with error %s", fm.OutputFilePath, err)
 	}
+
+	time.Sleep(3 * time.Second)
 
 	encoder := json.NewEncoder(newFile)
 	err = encoder.Encode(data)
