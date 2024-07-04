@@ -11,25 +11,29 @@ import (
 func main() {
 	taxRates := []float64{0, .07, .1, .15}
 	doneChans := make([]chan bool, len(taxRates))
+	errorChans := make([]chan error, len(taxRates))
 
 	for taxRateIdx, taxRate := range taxRates {
 		fm := filemanager.New("prices.txt", fmt.Sprintf("prices-output-%.0f.json", taxRate*100))
 		//cmdm := cmdmanager.New()
 		priceJob := prices.NewTaxIncludedPriceJob(fm, taxRate)
 		doneChans[taxRateIdx] = make(chan bool)
-		go priceJob.Process(doneChans[taxRateIdx])
+		errorChans[taxRateIdx] = make(chan error)
 
-		// if err != nil {
-		// 	fmt.Println("Could not process job")
-		// 	fmt.Println(err)
-		// 	return
-		// }
+		go priceJob.Process(doneChans[taxRateIdx], errorChans[taxRateIdx])
 	}
 
-	for _, doneChan := range doneChans {
-		<-doneChan
-	}
+	for index, _ := range taxRates {
+		select {
+		case err := <-errorChans[index]:
+			if err != nil {
+				fmt.Println(err)
+			}
 
+		case <-doneChans[index]:
+			fmt.Println("Done!")
+		}
+	}
 }
 
 func Round(valToRound float64, precision int) float64 {

@@ -28,9 +28,10 @@ func (job *TaxIncludedPriceJob) LoadPrices() error {
 	return nil
 }
 
-func (job *TaxIncludedPriceJob) Process(doneChan chan bool) {
+func (job *TaxIncludedPriceJob) Process(doneChan chan bool, errorChan chan error) {
 	err := job.LoadPrices()
 	if err != nil {
+		errorChan <- err
 		return
 	}
 

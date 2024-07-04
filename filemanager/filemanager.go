@@ -43,6 +43,8 @@ func (fm FileManager) WriteResult(data any) error {
 		return fmt.Errorf("failed to create file %s with error %s", fm.OutputFilePath, err)
 	}
 
+	defer newFile.Close()
+
 	time.Sleep(3 * time.Second)
 
 	encoder := json.NewEncoder(newFile)
